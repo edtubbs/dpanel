@@ -25,14 +25,8 @@ class MetricView extends LitElement {
 
   render () {
     const type = this.metric.type || null;
-    const desc = (this.metric.description ?? '').trim();
-    const tip = desc || String(this.metric.label || this.metric.name || '');
 
     return html`
-      <sl-tooltip .content=${tip} placement="top-start" hoist>
-        <span class="label">${this.metric.label}</span>
-      </sl-tooltip>
-
       <sl-copy-button
         class="copy"
         value="${this.metric.values}"
@@ -50,14 +44,19 @@ class MetricView extends LitElement {
   }
 
   renderChart = () => {
-    const values = (this.metric.values || []).filter(Boolean);
+    // do NOT filter(Boolean) — it would drop zeros and can hide objects
+    const values = Array.isArray(this.metric.values) ? this.metric.values : [];
     if (values.length < 2) return html`<span>-</span>`;
+
+    const desc = (this.metric.description ?? '').trim();
+    const tip  = desc || String(this.metric.label || this.metric.name || '');
 
     return html`
       <sparkline-chart-v2
         style="width:100%; background:transparent; --sparkline-height: clamp(140px, 24vh, 220px);"
         .data=${values}
-      </sparkline-chart-v2>
+        .title=${tip}
+      ></sparkline-chart-v2>
     `;
   }
 
@@ -94,14 +93,6 @@ class MetricView extends LitElement {
       top: 2px;
       left: -2px;
     }
-
-    .label {
-      font-size: 0.9rem;
-      font-weight: 500;
-      max-height: 1.5rem;
-      line-height: 1.5rem;
-    }
-    .label:hover { cursor: help; }
 
     .value-container {
       width: 100%;
